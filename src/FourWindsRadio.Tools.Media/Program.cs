@@ -3,18 +3,18 @@ using System.Diagnostics;
 using System.Net;
 using FourWindsRadio.Tools.Media;
 
-var connectionString = "";
+var connectionString = "DefaultEndpointsProtocol=https;AccountName=fourwindsradio;AccountKey=vN4jcYe2g92UwaJcF9xxqzlmOnW8wjJObVHMFprrj9YG+0t21ABysOEgjdoyFZiAX3zRXnducf1B+ASteqheYw==;EndpointSuffix=core.windows.net";
 
 var blobServiceClient = new BlobServiceClient(connectionString);
 
 const string KJV_CHRISTOPHER = "mp3-bible-kjv-chapters-christopher";
 const string KJV_ALEXANDER_SCOURBY = "mp3-bible-kjv-alexander-scourby";
 const string KJV_AUDIO_TREASURE = "mp3-bible-kjv-audio-treasure";
-const string DEVOTIONS = "media-audio-mp3-devotions";
-const string CLASSICAL = "media-audio-mp3-music-classical";
-const string MASTERPIECES = "media-audio-mp3-music-classical-millenium-masterpieces";
-const string MISCELLANEOUS = "media-audio-mp3-music-classical-miscellaneous";
-const string HYMNS = "media-audio-mp3-music-hymns";
+const string DEVOTIONS = "mp3-devotions";
+const string CLASSICAL = "mp3-classical";
+const string MASTERPIECES = "media-audio-mp3-classical-millenium-masterpieces";
+const string MISCELLANEOUS = "media-audio-mp3-classical-miscellaneous";
+const string HYMNS = "media-audio-mp3-hymns";
 const string THEMES = "media-audio-mp3-themes";
 
 
@@ -54,8 +54,8 @@ void DownloadBlobs()
 
 
 
-const string catalog = @"C:\Projects\media\catalog";
-const string playlist = @"C:\Projects\media\playlist-july";
+const string catalog = @"C:\Projects\fourwindsradio\catalog";
+const string playlist = @"C:\Projects\fourwindsradio\playlist";
 
 Random random = new Random();
 
@@ -72,7 +72,7 @@ var masterpieces = new List<FileInfo>();
 
 void DownloadFiles()
 {
-    var connectionString = "";
+    //var connectionString = "";
 
     var blobServiceClient = new BlobServiceClient(connectionString);
 
@@ -174,7 +174,7 @@ void LoadMasterpiecesCatalog()
 
 
 
-//GeneratePlaylist();
+GeneratePlaylist();
 
 void GeneratePlaylist()
 {
@@ -188,20 +188,20 @@ void GeneratePlaylist()
 
         var kjvChristopherFile = new FileInfo(kjvChristopherFiles[kjv1]);
 
-        CopyToPlaylist(kjvChristopherFile.FullName, playlist, kjvChristopherFile.Name);
+        //CopyToPlaylist(kjvChristopherFile.FullName, playlist, kjvChristopherFile.Name);
 
         if(counter % 5 == 0)
         {
-            AddHymns(3);
-            AddDevotions(1);
+            //AddHymns(3);
+            //AddDevotions(1);
             AddClassical(2);
-            AddTreasure(1);
-            AddHymns(8);
-            AddDevotions(1);
-            AddMiscellaneous(1);
-            AddScourby(1);
-            AddMasterpiece(1);
-            AddHymns(2);
+            //AddTreasure(1);
+            //AddHymns(8);
+            //AddDevotions(1);
+            //AddMiscellaneous(1);
+            //AddScourby(1);
+            //AddMasterpiece(1);
+            //AddHymns(2);
         }
     }
 }
@@ -436,14 +436,14 @@ List<string> GetContainers()
     return new List<string>()
     {
         KJV_CHRISTOPHER,
-        KJV_ALEXANDER_SCOURBY,
-        KJV_AUDIO_TREASURE,
-        DEVOTIONS,
+        //KJV_ALEXANDER_SCOURBY,
+        //KJV_AUDIO_TREASURE,
+        //DEVOTIONS,
         CLASSICAL,
-        MASTERPIECES,
-        MISCELLANEOUS,
-        HYMNS,
-        THEMES
+        //MASTERPIECES,
+        //MISCELLANEOUS,
+        //HYMNS,
+        //THEMES
     };
 }
 
@@ -486,7 +486,7 @@ string PrefixFile(string targetFile)
 
 
 
-CalculateDuration();
+//CalculateDuration();
 
 void CalculateDuration()
 {
