@@ -20,20 +20,20 @@ aws cloudformation create-stack \
 
 aws cloudformation wait stack-create-complete --stack-name ${stack_name} --region ${aws_region_code}
 
-key_id=$(aws ec2 describe-key-pairs --filters Name=key-name,Values=media-server-keypair --query KeyPairs[*].KeyPairId --output text --region ${aws_region_code})
+# key_id=$(aws ec2 describe-key-pairs --filters Name=key-name,Values=media-server-keypair --query KeyPairs[*].KeyPairId --output text --region ${aws_region_code})
 
-if [ ! -d "server/keys" ]
-then
-  mkdir server/keys
-fi
+# if [ ! -d "server/keys" ]
+# then
+#   mkdir server/keys
+# fi
 
-if test -f server/keys/media-server-keypair-${aws_region_code}.pem; then
-  rm server/keys/media-server-keypair-${aws_region_code}.pem
-fi
+# if test -f server/keys/media-server-keypair-${aws_region_code}.pem; then
+#   rm server/keys/media-server-keypair-${aws_region_code}.pem
+# fi
 
-aws ssm get-parameter --name " /ec2/keypair/${key_id}" --with-decryption \
-    --query Parameter.Value --region ${aws_region_code} \
-    --output text > server/keys/media-server-keypair-${aws_region_code}.pem
+# aws ssm get-parameter --name " /ec2/keypair/${key_id}" --with-decryption \
+#     --query Parameter.Value --region ${aws_region_code} \
+#     --output text > server/keys/media-server-keypair-${aws_region_code}.pem
 
 echo
 
