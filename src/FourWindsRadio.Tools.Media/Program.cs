@@ -7,6 +7,15 @@ var connectionString = "DefaultEndpointsProtocol=https;AccountName=fourwindsradi
 
 var blobServiceClient = new BlobServiceClient(connectionString);
 
+var homeDirectory = new DirectoryInfo(Environment.GetEnvironmentVariable("HOME"));
+
+var mediaDirectory = homeDirectory.CreateSubdirectory("media");
+var catalogDirectory = mediaDirectory.CreateSubdirectory("catalog");
+var playlistDirectory = mediaDirectory.CreateSubdirectory("playlist");
+
+var playlist = new FileInfo(Path.Combine(playlistDirectory.FullName, "playlist.txt"));
+var writer = playlist.AppendText();
+
 const string KJV_CHRISTOPHER = "mp3-bible-kjv-chapters-christopher";
 const string KJV_ALEXANDER_SCOURBY = "mp3-bible-kjv-alexander-scourby";
 const string KJV_AUDIO_TREASURE = "mp3-bible-kjv-audio-treasure";
@@ -18,8 +27,7 @@ const string HYMNS = "media-audio-mp3-hymns";
 const string THEMES = "media-audio-mp3-themes";
 
 
-
-//DownloadBlobs();
+DownloadBlobs();
 
 void DownloadBlobs()
 {
@@ -28,6 +36,8 @@ void DownloadBlobs()
     foreach (var container in containers)
     {
         var containerClient1 = blobServiceClient.GetBlobContainerClient(container);
+
+        var containerDirectory = catalogDirectory.CreateSubdirectory(container);
 
         foreach (var blob in containerClient1.GetBlobs())
         {
@@ -38,24 +48,20 @@ void DownloadBlobs()
             var webClient = new WebClient();
             var file = webClient.DownloadData(blobUrl);
 
-            if (!Directory.Exists(@$"C:\Users\mjames\Downloads\{container}"))
-            {
-                Directory.CreateDirectory(@$"C:\Users\mjames\Downloads\{container}");
-            }
-
-            File.WriteAllBytes(@$"C:\Users\mjames\Downloads\{container}\{blob.Name}", file);
+            File.WriteAllBytes(Path.Combine(containerDirectory.FullName, blob.Name), file);
         }
     }
 
     Console.WriteLine("DONE");
-    Console.ReadLine();
+    Console.WriteLine();
+    //Console.ReadLine();
 }
 
 
 
 
-const string catalog = @"C:\Projects\fourwindsradio\catalog";
-const string playlist = @"C:\Projects\fourwindsradio\playlist";
+//const string catalog = "~/media/catalog"; // @"C:\Projects\fourwindsradio\catalog";
+//const string playlist = "~/media/playlist"; // @"C:\Projects\fourwindsradio\playlist";
 
 Random random = new Random();
 
@@ -70,39 +76,39 @@ var masterpieces = new List<FileInfo>();
 
 //DownloadFiles();
 
-void DownloadFiles()
-{
-    //var connectionString = "";
+//void DownloadFiles()
+//{
+//    //var connectionString = "";
 
-    var blobServiceClient = new BlobServiceClient(connectionString);
+//    var blobServiceClient = new BlobServiceClient(connectionString);
 
-    var containers = GetContainers();
+//    var containers = GetContainers();
 
-    foreach (var container in containers)
-    {
-        var containerClient1 = blobServiceClient.GetBlobContainerClient(container);
+//    foreach (var container in containers)
+//    {
+//        var containerClient1 = blobServiceClient.GetBlobContainerClient(container);
 
-        foreach (var blob in containerClient1.GetBlobs())
-        {
-            Console.WriteLine($"{container}/{blob.Name}");
+//        foreach (var blob in containerClient1.GetBlobs())
+//        {
+//            Console.WriteLine($"{container}/{blob.Name}");
 
-            var blobUrl = $"{containerClient1.Uri}/{blob.Name}";
+//            var blobUrl = $"{containerClient1.Uri}/{blob.Name}";
 
-            var webClient = new WebClient();
-            var file = webClient.DownloadData(blobUrl);
+//            var webClient = new WebClient();
+//            var file = webClient.DownloadData(blobUrl);
 
-            if (!Directory.Exists(@$"{catalog}\{container}"))
-            {
-                Directory.CreateDirectory(@$"{catalog}\{container}");
-            }
+//            if (!Directory.Exists(@$"{catalog}\{container}"))
+//            {
+//                Directory.CreateDirectory(@$"{catalog}\{container}");
+//            }
 
-            File.WriteAllBytes(@$"{catalog}\{container}\{blob.Name}", file);
-        }
-    }
+//            File.WriteAllBytes(@$"{catalog}\{container}\{blob.Name}", file);
+//        }
+//    }
 
-    Console.WriteLine("DONE");
-    Console.ReadLine();
-}
+//    Console.WriteLine("DONE");
+//    Console.ReadLine();
+//}
 
 
 
@@ -116,84 +122,91 @@ void DownloadFiles()
 //LoadScourbyCatalog();
 //LoadMasterpiecesCatalog();
 
-void LoadHymnsCatalog()
-{
-    foreach (var file in Directory.GetFiles(Path.Combine(catalog, HYMNS)))
-    {
-        hymns.Add(new FileInfo(file));
-    }
-}
+//void LoadHymnsCatalog()
+//{
+//    foreach (var file in Directory.GetFiles(Path.Combine(catalog, HYMNS)))
+//    {
+//        hymns.Add(new FileInfo(file));
+//    }
+//}
 
-void LoadDevotionsCatalog()
-{
-    foreach (var file in Directory.GetFiles(Path.Combine(catalog, DEVOTIONS)))
-    {
-        devotions.Add(new FileInfo(file));
-    }
-}
+//void LoadDevotionsCatalog()
+//{
+//    foreach (var file in Directory.GetFiles(Path.Combine(catalog, DEVOTIONS)))
+//    {
+//        devotions.Add(new FileInfo(file));
+//    }
+//}
 
 void LoadClassicalCatalog()
 {
-    foreach (var file in Directory.GetFiles(Path.Combine(catalog, CLASSICAL)))
+    var classicalDirectory = new DirectoryInfo(Path.Combine(catalogDirectory.FullName, CLASSICAL));
+
+    foreach (var file in classicalDirectory.GetFiles())
     {
-        classical.Add(new FileInfo(file));
+        classical.Add(file);
     }
 }
 
-void LoadTreasureCatalog()
-{
-    foreach (var file in Directory.GetFiles(Path.Combine(catalog, KJV_AUDIO_TREASURE)))
-    {
-        treasure.Add(new FileInfo(file));
-    }
-}
+//void LoadTreasureCatalog()
+//{
+//    foreach (var file in Directory.GetFiles(Path.Combine(catalog, KJV_AUDIO_TREASURE)))
+//    {
+//        treasure.Add(new FileInfo(file));
+//    }
+//}
 
-void LoadMiscellaneousCatalog()
-{
-    foreach (var file in Directory.GetFiles(Path.Combine(catalog, MISCELLANEOUS)))
-    {
-        miscellaneous.Add(new FileInfo(file));
-    }
-}
+//void LoadMiscellaneousCatalog()
+//{
+//    foreach (var file in Directory.GetFiles(Path.Combine(catalog, MISCELLANEOUS)))
+//    {
+//        miscellaneous.Add(new FileInfo(file));
+//    }
+//}
 
-void LoadScourbyCatalog()
-{
-    foreach (var file in Directory.GetFiles(Path.Combine(catalog, KJV_ALEXANDER_SCOURBY)))
-    {
-        scourby.Add(new FileInfo(file));
-    }
-}
+//void LoadScourbyCatalog()
+//{
+//    foreach (var file in Directory.GetFiles(Path.Combine(catalog, KJV_ALEXANDER_SCOURBY)))
+//    {
+//        scourby.Add(new FileInfo(file));
+//    }
+//}
 
-void LoadMasterpiecesCatalog()
-{
-    foreach (var file in Directory.GetFiles(Path.Combine(catalog, MASTERPIECES)))
-    {
-        masterpieces.Add(new FileInfo(file));
-    }
-}
+//void LoadMasterpiecesCatalog()
+//{
+//    foreach (var file in Directory.GetFiles(Path.Combine(catalog, MASTERPIECES)))
+//    {
+//        masterpieces.Add(new FileInfo(file));
+//    }
+//}
 
 
 
 GeneratePlaylist();
 
-void GeneratePlaylist()
+void GeneratePlaylist() 
 {
-    var kjvChristopher = Path.Combine(catalog, KJV_CHRISTOPHER);
-    var kjvChristopherFiles = Directory.GetFiles(kjvChristopher).ToList();
+    var kjvChristopher = Path.Combine(catalogDirectory.FullName, KJV_CHRISTOPHER);
+    var kjvChristopherDirectory = new DirectoryInfo(kjvChristopher);
+    var kjvChristopherFiles = kjvChristopherDirectory
+        .GetFiles()
+        .OrderBy(f => f.Name)
+        .ToList();
 
     // MOVE KJV CHRISTOPHER 5 FILES AT A TIME
     for (int kjv1 = 0; kjv1 < kjvChristopherFiles.Count; kjv1++)
     {
         var counter = kjv1 + 1;
 
-        var kjvChristopherFile = new FileInfo(kjvChristopherFiles[kjv1]);
+        var kjvChristopherFile = new FileInfo(kjvChristopherFiles[kjv1].FullName);
 
-        //CopyToPlaylist(kjvChristopherFile.FullName, playlist, kjvChristopherFile.Name);
+        MoveToPlaylist(kjvChristopherFile.FullName, playlistDirectory.FullName, kjvChristopherFile.Name);
 
-        if(counter % 5 == 0)
+        if (counter % 5 == 0)
         {
             //AddHymns(3);
             //AddDevotions(1);
+
             AddClassical(2);
             //AddTreasure(1);
             //AddHymns(8);
@@ -204,59 +217,64 @@ void GeneratePlaylist()
             //AddHymns(2);
         }
     }
-}
 
-void AddHymns(int count)
-{
-    //var hymnIndex = 0; //this was returned to keep track in calling method to generate files in sequence - not used with random
-
-    if(hymns.Count < count)
+    foreach(var item in FileHelper.Playlist)
     {
-        LoadHymnsCatalog();
-    }
-
-    var rnds = Enumerable.Range(0, hymns.Count - 1)
-        .OrderBy(r => random.Next(hymns.Count - 1))
-        .Take(count)
-        .ToList();
-
-    foreach(var rnd in rnds)
-    {
-        var file = hymns[rnd];
-
-        CopyToPlaylist(file.FullName, playlist, file.Name);
-
-        Console.WriteLine(file.Name);
-    }
-
-    foreach(var rnd in rnds.OrderByDescending(r => r))
-    {
-        hymns.RemoveAt(rnd);
+        writer.WriteLine(item.Filename);
     }
 }
 
-void AddDevotions(int count)
-{
-    //var devotionIndex = 0; //this was returned to keep track in calling method to generate files in sequence - not used with random
+//void AddHymns(int count)
+//{
+//    //var hymnIndex = 0; //this was returned to keep track in calling method to generate files in sequence - not used with random
 
-    if(devotions.Count < 1)
-    {
-        LoadDevotionsCatalog();
-    }
+//    if(hymns.Count < count)
+//    {
+//        LoadHymnsCatalog();
+//    }
 
-    var rnd = Enumerable.Range(0, devotions.Count - 1)
-        .OrderBy(r => random.Next(devotions.Count - 1))
-        .Take(count)
-        .Single();
+//    var rnds = Enumerable.Range(0, hymns.Count - 1)
+//        .OrderBy(r => random.Next(hymns.Count - 1))
+//        .Take(count)
+//        .ToList();
 
-    var file = devotions[rnd];
+//    foreach(var rnd in rnds)
+//    {
+//        var file = hymns[rnd];
 
-    CopyToPlaylist(file.FullName, playlist, file.Name);
+//        CopyToPlaylist(file.FullName, playlist, file.Name);
 
-    Console.WriteLine(file.Name);
+//        Console.WriteLine(file.Name);
+//    }
 
-    devotions.RemoveAt(rnd);
-}
+//    foreach(var rnd in rnds.OrderByDescending(r => r))
+//    {
+//        hymns.RemoveAt(rnd);
+//    }
+//}
+
+//void AddDevotions(int count)
+//{
+//    //var devotionIndex = 0; //this was returned to keep track in calling method to generate files in sequence - not used with random
+
+//    if(devotions.Count < 1)
+//    {
+//        LoadDevotionsCatalog();
+//    }
+
+//    var rnd = Enumerable.Range(0, devotions.Count - 1)
+//        .OrderBy(r => random.Next(devotions.Count - 1))
+//        .Take(count)
+//        .Single();
+
+//    var file = devotions[rnd];
+
+//    CopyToPlaylist(file.FullName, playlist, file.Name);
+
+//    Console.WriteLine(file.Name);
+
+//    devotions.RemoveAt(rnd);
+//}
 
 void AddClassical(int count)
 {
@@ -274,7 +292,7 @@ void AddClassical(int count)
     {
         var file = classical[rnd];
 
-        CopyToPlaylist(file.FullName, playlist, file.Name);
+        MoveToPlaylist(file.FullName, playlistDirectory.FullName, file.Name);
 
         Console.WriteLine(file.Name);
     }
@@ -285,117 +303,117 @@ void AddClassical(int count)
     }
 }
 
-void AddTreasure(int count)
-{
-    if(treasure.Count < 1)
-    {
-        LoadTreasureCatalog();
-    }
+//void AddTreasure(int count)
+//{
+//    if(treasure.Count < 1)
+//    {
+//        LoadTreasureCatalog();
+//    }
 
-    var rnd = Enumerable.Range(0, treasure.Count - 1)
-        .OrderBy(r => random.Next(treasure.Count - 1))
-        .Take(count)
-        .Single();
+//    var rnd = Enumerable.Range(0, treasure.Count - 1)
+//        .OrderBy(r => random.Next(treasure.Count - 1))
+//        .Take(count)
+//        .Single();
 
-    var file = treasure[rnd];
+//    var file = treasure[rnd];
 
-    CopyToPlaylist(file.FullName, playlist, file.Name);
+//    CopyToPlaylist(file.FullName, playlist, file.Name);
 
-    Console.WriteLine(file.Name);
+//    Console.WriteLine(file.Name);
 
-    treasure.RemoveAt(rnd);
-}
+//    treasure.RemoveAt(rnd);
+//}
 
-void AddMiscellaneous(int count)
-{
-    if (miscellaneous.Count < 1)
-    {
-        LoadMiscellaneousCatalog();
-    }
+//void AddMiscellaneous(int count)
+//{
+//    if (miscellaneous.Count < 1)
+//    {
+//        LoadMiscellaneousCatalog();
+//    }
 
-    var rnd = Enumerable.Range(0, miscellaneous.Count - 1)
-        .OrderBy(r => random.Next(miscellaneous.Count - 1))
-        .Take(count)
-        .Single();
+//    var rnd = Enumerable.Range(0, miscellaneous.Count - 1)
+//        .OrderBy(r => random.Next(miscellaneous.Count - 1))
+//        .Take(count)
+//        .Single();
 
-    var file = miscellaneous[rnd];
+//    var file = miscellaneous[rnd];
 
-    CopyToPlaylist(file.FullName, playlist, file.Name);
+//    CopyToPlaylist(file.FullName, playlist, file.Name);
 
-    Console.WriteLine(file.Name);
+//    Console.WriteLine(file.Name);
 
-    miscellaneous.RemoveAt(rnd);
-}
+//    miscellaneous.RemoveAt(rnd);
+//}
 
-void AddScourby(int count)
-{
-    if (scourby.Count < 1)
-    {
-        LoadScourbyCatalog();
-    }
+//void AddScourby(int count)
+//{
+//    if (scourby.Count < 1)
+//    {
+//        LoadScourbyCatalog();
+//    }
 
-    var rnd = Enumerable.Range(0, scourby.Count - 1)
-        .OrderBy(r => random.Next(scourby.Count - 1))
-        .Take(count)
-        .Single();
+//    var rnd = Enumerable.Range(0, scourby.Count - 1)
+//        .OrderBy(r => random.Next(scourby.Count - 1))
+//        .Take(count)
+//        .Single();
 
-    var file = scourby[rnd];
+//    var file = scourby[rnd];
 
-    CopyToPlaylist(file.FullName, playlist, file.Name);
+//    CopyToPlaylist(file.FullName, playlist, file.Name);
 
-    Console.WriteLine(file.Name);
+//    Console.WriteLine(file.Name);
 
-    scourby.RemoveAt(rnd);
-}
+//    scourby.RemoveAt(rnd);
+//}
 
-void AddMasterpiece(int count)
-{
-    if (masterpieces.Count < 1)
-    {
-        LoadMasterpiecesCatalog();
-    }
+//void AddMasterpiece(int count)
+//{
+//    if (masterpieces.Count < 1)
+//    {
+//        LoadMasterpiecesCatalog();
+//    }
 
-    var rnd = Enumerable.Range(0, masterpieces.Count - 1)
-        .OrderBy(r => random.Next(masterpieces.Count - 1))
-        .Take(count)
-        .Single();
+//    var rnd = Enumerable.Range(0, masterpieces.Count - 1)
+//        .OrderBy(r => random.Next(masterpieces.Count - 1))
+//        .Take(count)
+//        .Single();
 
-    var file = masterpieces[rnd];
+//    var file = masterpieces[rnd];
 
-    CopyToPlaylist(file.FullName, playlist, file.Name);
+//    CopyToPlaylist(file.FullName, playlist, file.Name);
 
-    Console.WriteLine(file.Name);
+//    Console.WriteLine(file.Name);
 
-    masterpieces.RemoveAt(rnd);
-}
+//    masterpieces.RemoveAt(rnd);
+//}
 
-void CopyToPlaylist(string source, string targetPath, string targetFile)
-{
-    var filename = targetFile;
+//void CopyToPlaylist(string source, string targetPath, string targetFile)
+//{
+//    var filename = targetFile;
 
-    targetFile = PrefixFile(targetFile);
+//    targetFile = PrefixFile(targetFile);
 
-    var target = Path.Combine(targetPath, targetFile);
+//    var target = Path.Combine(targetPath, targetFile);
 
-    Console.WriteLine(target);
+//    Console.WriteLine(target);
 
-    if (!FileHelper.Playlist.Any(p => p.Filename == filename))
-    {
-        var item = new PlaylistItem
-        {
-            Source = source,
-            Target = target,
-            Filename = filename,
-            IsCopy = true
-        };
+//    if (!FileHelper.Playlist.Any(p => p.Filename == filename))
+//    {
+//        var item = new PlaylistItem
+//        {
+//            Source = source,
+//            Target = target,
+//            Filename = filename,
+//            IsCopy = true
+//        };
 
-        FileHelper.Playlist.Add(item);
-    }
+//        FileHelper.Playlist.Add(item);
+//    }
 
-    File.Copy(source, target);
+//    File.Copy(source, target);
 
-    FileHelper.FileCounter += 1;
-}
+//    FileHelper.FileCounter += 1;
+//}
 
 void MoveToPlaylist(string source, string targetPath, string targetFile) //, int next)
 {
@@ -426,7 +444,7 @@ void MoveToPlaylist(string source, string targetPath, string targetFile) //, int
         FileHelper.Playlist.Add(item);
     }
 
-    //File.Move(source, target);
+    File.Move(source, target);
 
     FileHelper.FileCounter += 1;
 }
@@ -559,4 +577,19 @@ void CalculateDuration()
     //Console.WriteLine($"{hours} hours");
     //Console.WriteLine($"{minutes} minutes");
     //Console.WriteLine($"{seconds} seconds");
+}
+
+void StartStreaming()
+{
+    var process = new Process();
+    process.StartInfo.FileName = "ffmpeg";
+    process.StartInfo.CreateNoWindow = true;
+    process.StartInfo.Arguments = $"-f concat -re -safe 0 -stream_loop -1 -i \"{playlistDirectory.FullName}.playlist.txt\" -c copy -f flv rtmp://localhost/live/stream";
+    process.Start();
+    process.WaitForExit();
+
+    if (process.ExitCode != 0)
+    {
+        Console.WriteLine("Event caught!");
+    }
 }
