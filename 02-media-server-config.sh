@@ -8,6 +8,7 @@ sudo apt install nginx -y
 sudo apt install libnginx-mod-rtmp -y
 sudo apt install unzip -y
 sudo apt install ffmpeg -y
+# sudo apt install net-tools -y
 
 sudo bash -c 'cat <<EOF | tee rtmp-config.json
 
@@ -27,18 +28,7 @@ EOF'
 
 sudo bash -c 'cat rtmp-config.json >> /etc/nginx/nginx.conf'
 
-rm rtmp-config.json
+sudo rm rtmp-config.json
 
-ufw allow 1935/tcp
-systemctl reload nginx.service
-
-wget https://fourwindsradio.blob.core.windows.net/linux-x64/linux-x64.zip
-unzip linux-x64.zip
-rm linux-x64.zip
-cd linux-x64
-
-chmod 777 FourWindsRadio.Tools.Media
-
-./FourWindsRadio.Tools.Media
-
-cd ~
+sudo ufw allow 1935/tcp
+sudo systemctl reload nginx.service

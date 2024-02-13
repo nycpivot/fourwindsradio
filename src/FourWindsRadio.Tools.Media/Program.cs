@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Net;
 using FourWindsRadio.Tools.Media;
+using System.Net.NetworkInformation;
 
 var connectionString = "DefaultEndpointsProtocol=https;AccountName=fourwindsradio;AccountKey=vN4jcYe2g92UwaJcF9xxqzlmOnW8wjJObVHMFprrj9YG+0t21ABysOEgjdoyFZiAX3zRXnducf1B+ASteqheYw==;EndpointSuffix=core.windows.net";
 
@@ -218,9 +219,25 @@ void GeneratePlaylist()
         }
     }
 
+    Console.WriteLine(FileHelper.Playlist.Count);
+
+    int count = 0;
+    
     foreach(var item in FileHelper.Playlist)
     {
-        writer.WriteLine(item.Filename);
+        count++;
+
+        if (item.Filename.EndsWith("mp4"))
+        {
+            writer.WriteLine($"file '{item.FullName}'");
+
+            if (count > 100)
+            {
+                writer.Flush();
+                writer.Close();
+                break;
+            }
+        }
     }
 }
 
@@ -283,23 +300,26 @@ void AddClassical(int count)
         LoadClassicalCatalog();
     }
 
-    var rnds = Enumerable.Range(0, classical.Count - 1)
-        .OrderBy(r => random.Next(classical.Count - 1))
-        .Take(count)
-        .ToList();
-
-    foreach(var rnd in rnds)
+    if (classical.Count > 0)
     {
-        var file = classical[rnd];
+        var rnds = Enumerable.Range(0, classical.Count - 1)
+            .OrderBy(r => random.Next(classical.Count - 1))
+            .Take(count)
+            .ToList();
 
-        MoveToPlaylist(file.FullName, playlistDirectory.FullName, file.Name);
+        foreach (var rnd in rnds)
+        {
+            var file = classical[rnd];
 
-        Console.WriteLine(file.Name);
-    }
+            MoveToPlaylist(file.FullName, playlistDirectory.FullName, file.Name);
 
-    foreach(var rnd in rnds.OrderByDescending(r => r))
-    {
-        classical.RemoveAt(rnd);
+            Console.WriteLine(file.Name);
+        }
+
+        foreach (var rnd in rnds.OrderByDescending(r => r))
+        {
+            classical.RemoveAt(rnd);
+        }
     }
 }
 
@@ -425,10 +445,10 @@ void MoveToPlaylist(string source, string targetPath, string targetFile) //, int
 
     Console.WriteLine(target);
 
-    if(FileHelper.Playlist.Count(p => p.Filename == filename) > 0)
-    {
-        Debugger.Break();
-    }
+    //if(FileHelper.Playlist.Count(p => p.Filename == filename) > 0)
+    //{
+    //    Debugger.Break();
+    //}
 
     if (!FileHelper.Playlist.Any(p => p.Filename == filename))
     {
@@ -437,6 +457,7 @@ void MoveToPlaylist(string source, string targetPath, string targetFile) //, int
             Source = source,
             Target = target,
             Filename = filename,
+            FullName = targetFile,
             IsCopy = false,
             Next = 0
         };
@@ -579,17 +600,77 @@ void CalculateDuration()
     //Console.WriteLine($"{seconds} seconds");
 }
 
-void StartStreaming()
+StartStreaming();
+
+async void StartStreaming()
 {
     var process = new Process();
     process.StartInfo.FileName = "ffmpeg";
     process.StartInfo.CreateNoWindow = true;
-    process.StartInfo.Arguments = $"-f concat -re -safe 0 -stream_loop -1 -i \"{playlistDirectory.FullName}.playlist.txt\" -c copy -f flv rtmp://localhost/live/stream";
-    process.Start();
-    process.WaitForExit();
 
-    if (process.ExitCode != 0)
+    // the following loads one media file at a time
+    var files = new List<string>();
+    files.Add("~/media/playlist/alb-adagio.mp4");
+    files.Add("~/media/playlist/alb-op5-01.mp4");
+    files.Add("~/media/playlist/alb-op5-02.mp4");
+
+    foreach(var file in files)
     {
-        Console.WriteLine("Event caught!");
+        process.StartInfo.Arguments = $"-re -i \"{file}\" -c:v copy -c:a aac -ar 44100 -ac 1 -f flv rtmp://localhost/live/stream";
+        process.Start();
+
+        // maybe check here for existing connections instead of a different thread
+    }
+
+    // the following uses the playlist file
+    // process.StartInfo.Arguments = $"-f concat -re -safe 0 -stream_loop -1 -i \"{playlistDirectory.FullName}/playlist.txt\" -c copy -f flv rtmp://localhost/live/stream";
+    
+    // process.Start();
+
+    // MonitorPort();
+
+    ////process.WaitForExit();
+
+    ////if (process.ExitCode != 0)
+    ////{
+    ////    Console.WriteLine("Event caught!");
+    ////}
+}
+
+
+Task MonitorPort()
+{
+    while(true)
+    {
+        Thread.Sleep(10000);
+
+        bool inUse = false;
+
+        var ipProperties = IPGlobalProperties.GetIPGlobalProperties();
+        var ipEndPoints = ipProperties.GetActiveTcpListeners();
+        var ipConnections = ipProperties.GetActiveTcpConnections();
+
+        var endpointsCount = ipEndPoints.Count(ep => ep.Port == 1935);
+        foreach (var endPoint in ipEndPoints)
+        {
+            Console.WriteLine($"Port: {endPoint.Port}");
+
+            //if (endPoint.Port == 1935)
+            //{
+            //    Console.WriteLine("CONNECTED");
+
+            //    inUse = true;
+            //    break;
+            //}
+        }
+
+        var connectionsCount = ipConnections.Count();
+        foreach(var connection in ipConnections)
+        {
+            Console.WriteLine($"Local Endpoint: {connection.LocalEndPoint}");
+            Console.WriteLine($"Remote Endpoint: {connection.RemoteEndPoint}");
+        }
+
+        //return inUse;
     }
 }
